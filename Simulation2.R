@@ -26,7 +26,7 @@ for (i in 1:40){
 Log_Odds_Ratio <- function(StudySize, O_R, Heterogeneity, Control_Prop, Outcome1_Prop){
   StudyOR <- exp(rnorm(1, log(O_R), Heterogeneity))
   Out1Size <- rbinom(1, StudySize, Outcome1_Prop)
-  Group1Out1 <- as.integer(Control_Prop*Out1Size)
+  Group1Out1 <- as.integer(rbinom(1, Out1Size, Control_Prop))
   Group2Out1 <- as.integer(Out1Size - Group1Out1)
   Group2Out2 <- as.integer((Group2Out1*(StudySize-Out1Size))/(Group2Out1 + Group1Out1*StudyOR))
   Group1Out2 <- as.integer((StudySize-Out1Size)- Group2Out2)

@@ -1,0 +1,118 @@
+### Set working directory
+setwd("D:\\Biostats and Epidemiology\\Project\\Project-SimCSV")
+
+### Set seed
+set.seed(1)
+
+### Import required libraries
+require(metafor)
+
+### Import simulation results
+OR_Results <- read.csv("OR_10_1_2.csv")
+
+### Set working directory to results
+setwd("D:\\Biostats and Epidemiology\\Project\\Project-Results")
+
+### Set variables
+O_R_New <- c(1, 1.2, 1.4, 1.6, 1.8, 2)
+Hetero_New <- c(0.1, 0.3, 0.5)
+Updated_Studies <- c(2, 5, 10, 15, 20)
+Repeats <- max(OR_Results$Rep_Number)
+Database_Length <- length(O_R_New)*length(Hetero_New)*length(Updated_Studies)*Repeats
+
+### Working with meta-analysis
+
+RE_Results_OR <- data.frame(Rep_Number = integer(length = Database_Length),
+                            OR_New = numeric(length = Database_Length), 
+                            Het_New = numeric(length = Database_Length), 
+                            Num_Up = integer(length = Database_Length),
+                            Init_Est = numeric(length = Database_Length),
+                            Init_Est_SE = numeric(length = Database_Length),
+                            Init_Est_p = numeric(length = Database_Length),
+                            Init_CI_lb = numeric(length = Database_Length),
+                            Init_CI_ub = numeric(length = Database_Length),
+                            Init_tau2 = numeric(length = Database_Length),
+                            Init_tau2_SE = numeric(length = Database_Length),
+                            Init_BIC = numeric(length = Database_Length),
+                            Init_AIC = numeric(length = Database_Length),
+                            Init_LogLik = numeric(length = Database_Length),
+                            Up_Est = numeric(length = Database_Length),
+                            Up_Est_SE = numeric(length = Database_Length),
+                            Up_Est_p = numeric(length = Database_Length),
+                            Up_CI_lb = numeric(length = Database_Length),
+                            Up_CI_ub = numeric(length = Database_Length),
+                            Up_tau2 = numeric(length = Database_Length),
+                            Up_tau2_SE = numeric(length = Database_Length),
+                            Up_BIC = numeric(length = Database_Length),
+                            Up_AIC = numeric(length = Database_Length),
+                            Up_LogLik = numeric(length = Database_Length),
+                            stringsAsFactors=FALSE)
+
+
+## Set loops
+counter <- 1
+
+for (m in O_R_New){
+  
+  for (l in Hetero_New){
+    
+    for (k in Updated_Studies){
+      
+      for(n in 1:Repeats){
+        
+        ## Set temporary dataset
+        data_temp <- OR_Results[OR_Results$Rep_Number == n & OR_Results$Rep_O_R == m & OR_Results$Het_New == l
+                                & OR_Results$Num_Up == k,]
+        
+        ## Initial meta-analysis (random-effects)
+        x <- rma(measure="OR", ai = Group1Outcome1, bi = Group1Outcome2, n1i = Group1Size, 
+                 ci = Group2Outcome1, di = Group2Outcome2, n2i = Group2Size, 
+                 data=data_temp[data_temp$I_U == "I",], method="REML")
+        
+        ## Input values
+        
+        RE_Results_MD$Init_Est[counter] <- x$b
+        RE_Results_MD$Init_Est_SE[counter] <- x$se
+        RE_Results_MD$Init_Est_p[counter] <- x$pval
+        RE_Results_MD$Init_CI_lb[counter] <- x$ci.lb
+        RE_Results_MD$Init_CI_ub[counter] <- x$ci.ub
+        RE_Results_MD$Init_tau2[counter] <- x$tau2
+        RE_Results_MD$Init_tau2_SE[counter] <- x$se.tau2
+        RE_Results_MD$Init_BIC[counter] <- BIC.rma(x)
+        RE_Results_MD$Init_AIC[counter] <- AIC.rma(x)
+        RE_Results_MD$Init_LogLik[counter] <- logLik.rma(x)
+        
+        ## Updated meta-analysis
+        y <- rma(measure="OR", ai = Group1Outcome1, bi = Group1Outcome2, n1i = Group1Size, 
+                 ci = Group2Outcome1, di = Group2Outcome2, n2i = Group2Size, 
+                 data=data_temp, method="REML")
+        
+        ## Input values
+        
+        RE_Results_MD$Up_Est[counter] <- y$b
+        RE_Results_MD$Up_Est_SE[counter] <- y$se
+        RE_Results_MD$Up_Est_p[counter] <- y$pval
+        RE_Results_MD$Up_CI_lb[counter] <- y$ci.lb
+        RE_Results_MD$Up_CI_ub[counter] <- y$ci.ub
+        RE_Results_MD$Up_tau2[counter] <- y$tau2
+        RE_Results_MD$Up_tau2_SE[counter] <- y$se.tau2
+        RE_Results_MD$Up_BIC[counter] <- BIC.rma(y)
+        RE_Results_MD$Up_AIC[counter] <- AIC.rma(y)
+        RE_Results_MD$Up_LogLik[counter] <- logLik.rma(y)
+        
+        ## Input static values
+        RE_Results_MD$Rep_Number[counter] <- n
+        RE_Results_MD$OR_New[counter] <- m
+        RE_Results_MD$Het_New[counter] <- l
+        RE_Results_MD$Num_Up[counter] <- k
+        
+        
+        counter <- counter + 1
+        
+      }
+    }
+  }
+}
+
+### Write whole simulation to .csv
+write.csv(RE_Results_OR, file = "RE_Results_MD.csv")
