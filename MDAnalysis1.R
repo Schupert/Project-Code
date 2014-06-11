@@ -5,22 +5,25 @@ setwd("D:\\Biostats and Epidemiology\\Project\\Project-SimCSV")
 set.seed(1)
 
 ### Import required libraries
+require(pROC)
 
 ### Import results
 RE_Results_MD <- read.csv("RE_Results_MD.csv")
 
 ### Defining a change
-Est_Change <- integer(length = RE_Results_MD$M_D)
+Est_Change <- integer(length = length(RE_Results_MD$M_D))
 
 for (i in 1:length(RE_Results_MD$M_D)) Est_Change[i] <- sum(RE_Results_MD$M_D[i] > 0)
 
-Het_Change <- numeric(length = RE_Results_MD$Het_Change)
+Het_Change <- numeric(length = length(RE_Results_MD$Het_Change))
 
 for (i in 1:length(RE_Results_MD$Het_Change)) Het_Change[i] <- sum(RE_Results_MD$M_D[i] > 0)
 
 ### Method using absolute difference in mean reuslts
 
 Abs_Diff_Est <- RE_Results_MD$Init_Est - RE_Results_MD$Up_Est
+ROC_Abs_Diff_Est <- roc(Est_Change ~ Abs_Diff_Est)
+plot(ROC_Abs_Diff_Est)
 
 ### Method using relative difference in mean results
 
