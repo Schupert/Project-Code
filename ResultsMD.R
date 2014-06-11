@@ -7,11 +7,8 @@ set.seed(1)
 ### Import required libraries
 require(metafor)
 
-### Import simulation results
-MD_Results <- read.csv("Total_Sim_MD.csv")
-
-### Set working directory to results
-setwd("D:\\Biostats and Epidemiology\\Project\\Project-Results")
+### Import sample simulation, to determine length
+MD_Results <- read.csv("MD_10_1_2.csv")
 
 ### Set variables
 Mean_Difference_Change <- c(0, 0.2, 0.4, 0.6, 0.8, 1)
@@ -59,16 +56,18 @@ for (m in Mean_Difference_Change){
     
     for (k in Updated_Studies){
       
+      nam <- paste("MD", as.integer(m*10), as.integer(l*10), k, sep = "_")
+      imported_data <- read.csv(file = paste(nam, ".csv", sep = ""))
+      
       for(n in 1:Repeats){
         
         ## Set temporary dataset
-        data_temp <- MD_Results[MD_Results$Rep_Number == n & MD_Results$M_D == m & MD_Results$Het_New == l
-                                & MD_Results$Num_Up == k,]
+        data_temp <- imported_data[imported_data$Rep_Number == n,]
         
         ## Initial meta-analysis (random-effects)
         x <- rma(measure="MD", m1i = Group1Mean, sd1i = Group1SD, n1i = Group1Size, 
                  m2i = Group2Mean, sd2i = Group2SD, n2i = Group2Size, 
-                 data=data_temp[data_temp$I_U == "I",], method="REML")
+                 data=data_temp[data_temp$I_U == "I",], method="SJ")
         
         ## Input values
         
@@ -86,7 +85,7 @@ for (m in Mean_Difference_Change){
         ## Updated meta-analysis
         y <- rma(measure="MD", m1i = Group1Mean, sd1i = Group1SD, n1i = Group1Size, 
                  m2i = Group2Mean, sd2i = Group2SD, n2i = Group2Size, 
-                 data=data_temp, method="REML")
+                 data=data_temp, method="SJ")
         
         ## Input values
         
@@ -115,6 +114,8 @@ for (m in Mean_Difference_Change){
 }
 
 
+### Set working directory to results
+setwd("D:\\Biostats and Epidemiology\\Project\\Project-Results")
+
 ### Write whole simulation to .csv
 write.csv(RE_Results_MD, file = "RE_Results_MD.csv")
-
