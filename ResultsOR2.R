@@ -43,6 +43,21 @@ RE_Results_OR <- data.frame(Rep_Number = integer(length = Database_Length),
                             Up_BIC = numeric(length = Database_Length),
                             Up_AIC = numeric(length = Database_Length),
                             Up_LogLik = numeric(length = Database_Length),
+                            MLM_Est = numeric(length = Database_Length),
+                            MLM_Est_SE = numeric(length = Database_Length),
+                            MLM_Est_p = numeric(length = Database_Length),
+                            MLM_CI_lb = numeric(length = Database_Length),
+                            MLM_CI_ub = numeric(length = Database_Length),
+                            MLM_Mod_Est = numeric(length = Database_Length),
+                            MLM_Mod_Est_SE = numeric(length = Database_Length),
+                            MLM_Mod_p = numeric(length = Database_Length),
+                            MLM_Mod_CI_lb = numeric(length = Database_Length),
+                            MLM_Mod_CI_ub = numeric(length = Database_Length),
+                            MLM_tau2 = numeric(length = Database_Length),
+                            MLM_tau2_SE = numeric(length = Database_Length),
+                            MLM_BIC = numeric(length = Database_Length),
+                            MLM_AIC = numeric(length = Database_Length),
+                            MLM_LogLik = numeric(length = Database_Length),
                             stringsAsFactors=FALSE)
 
 
@@ -57,6 +72,10 @@ for (m in O_R_New){
       
       nam <- paste("OR", as.integer(m*10), as.integer(l*10), k, sep = "_")
       imported_data <- read.csv(file = paste(nam, ".csv", sep = ""))
+      
+      ## Dummy variable for MLM
+      
+      Init_Updated <- c(rep(0, 20), rep(1, k))
       
       for(n in 1:Repeats){
         
@@ -98,6 +117,30 @@ for (m in O_R_New){
         RE_Results_OR$Up_BIC[counter] <- BIC.rma(y)
         RE_Results_OR$Up_AIC[counter] <- AIC.rma(y)
         RE_Results_OR$Up_LogLik[counter] <- logLik.rma(y)
+        
+        ## Multi-level meta-analysis
+        
+        z <- rma(measure="OR", ai = Group1Outcome1, bi = Group1Outcome2, n1i = Group1Size, 
+                 ci = Group2Outcome1, di = Group2Outcome2, n2i = Group2Size, 
+                 data=data_temp, method="SJ", mods = Init_Updated)
+        
+        ## Input values
+        
+        RE_Results_OR$MLM_Est[counter] <- z$b[[1]]
+        RE_Results_OR$MLM_Est_SE[counter] <- z$se[[1]]
+        RE_Results_OR$MLM_Est_p[counter] <- z$pval[[1]]
+        RE_Results_OR$MLM_CI_lb[counter] <- z$ci.lb[[1]]
+        RE_Results_OR$MLM_CI_ub[counter] <- z$ci.ub[[1]]
+        RE_Results_OR$MLM_Mod_Est[counter] <- z$b[[2]]
+        RE_Results_OR$MLM_Mod_Est_SE[counter] <-z$se[[2]]
+        RE_Results_OR$MLM_Mod_p[counter] <- z$pval[[2]]
+        RE_Results_OR$MLM_Mod_CI_lb[counter] <- z$ci.lb[[2]]
+        RE_Results_OR$MLM_Mod_CI_ub[counter] <- z$ci.ub[[2]]
+        RE_Results_OR$MLM_tau2[counter] <- z$tau2
+        RE_Results_OR$MLM_tau2_SE[counter] <- z$se.tau2
+        RE_Results_OR$MLM_BIC[counter] <- BIC.rma(z)
+        RE_Results_OR$MLM_AIC[counter] <- AIC.rma(z)
+        RE_Results_OR$MLM_LogLik[counter] <- logLik.rma(z)
         
         ## Input static values
         RE_Results_OR$Rep_Number[counter] <- n

@@ -148,3 +148,7 @@ write.csv(Total_Simulation_MD, file = "Total_Sim_MD.csv")
 ### Check no negative values
 
 for (i in Total_Simulation_MD){ print(sum( i< 0)) }
+
+
+sum(is.na(Total_Simulation_MD)==TRUE)
+which(is.na(Total_Simulation_MD)==TRUE)
