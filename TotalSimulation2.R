@@ -25,6 +25,8 @@ for (i in 1:40){
 Mean_Difference <- function(StudySize, MeanDifference, Heterogeneity, BioVariation){
   StudyMeanDifference <- rnorm(1, MeanDifference, Heterogeneity)
   GroupSize <- rbinom(1, StudySize, 0.5)
+  if (GroupSize <= 1){GroupSize <- 2}
+  if ((StudySize - GroupSize) <= 1){GroupSize <- GroupSize - 2}
   Group1 <- rnorm(GroupSize, 10, BioVariation)
   Group2 <- rnorm((StudySize - GroupSize), (10 + StudyMeanDifference), BioVariation)
   Group1Mean <- mean(Group1)
@@ -41,7 +43,7 @@ Hetero_New <- c(0.1, 0.3, 0.5)
 Updated_Studies <- c(2, 5, 10, 15, 20)
 Initial_Studies <- 20
 Variance <- 0.5
-Repeats <- 1000
+Repeats <- 5000
 
 ### Run Simulation
 
@@ -148,7 +150,7 @@ write.csv(Total_Simulation_MD, file = "Total_Sim_MD.csv")
 ### Check no negative values
 
 for (i in Total_Simulation_MD){ print(sum( i< 0)) }
-
+sum(is.na(Total_Simulation_MD)==TRUE)
 
 ### Function to simulate a single observational study. Control_prop represents the proportion of 
 ### outcome 1 (deaths) that are controls. Pic is the proportion of controls that are expected to die
