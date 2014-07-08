@@ -17,6 +17,12 @@ RE_Results_MD <- data.table(RE_Results_MD_frame)
 
 MD_Means <- RE_Results_MD[, lapply(.SD, mean, na.rm=TRUE), by=list(M_D, Het_New, Num_Up)]
 MD_SDs <- RE_Results_MD[, lapply(.SD, sd, na.rm=TRUE), by=list(M_D, Het_New, Num_Up)]
+MD_SE <- 
+
+### Write summary tables to csv
+
+write.csv(MD_Means, file = "MD_Means.csv")
+write.csv(MD_SDs, file = "MD_SDs.csv")
 
 
 ### Defining a change in Estimate and Heterogeneity (lower and higher)
@@ -42,6 +48,11 @@ ROC_Abs_Diff_Est
 
 
 ### Playing with optimising sensitivity and specificity
+
+
+### Graphics to adapt, requires a pre-calculation of mean and ci
+y <- ggplot(subset(MD_Means, Het_New == 0.3), aes(x = M_D, y = Net_TE, colour = Num_Up))
+y + geom_errorbar(aes(ymin=Net_TE-ci, ymax=Net_TE+ci), width=.1, position= "dodge") + geom_point()
 
 product <- ROC_Abs_Diff_Est$sensitivities*ROC_Abs_Diff_Est$specificities
 test_location <- match(max(product), product)
