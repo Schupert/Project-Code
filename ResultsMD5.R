@@ -90,13 +90,17 @@ MD_Analysis <- function(data_temp_all){
   return(Output)
 }
 
-system.time(
-test1 <- ddply(MD_Results[Rep_Number == 1], .(M_D, Het_New, Num_Up, Rep_Number), MD_Analysis, 
-                 .progress = "text")
-)
+
+
 
 a <- MD_Results[Rep_Number == 1]
 names(a)
+
+test2 <- by(a, list(a$M_D, a$Het_New, a$Num_Up), MD_Analysis)
+
+
+
+test1 <- ddply(a, .(M_D, Het_New, Num_Up), MD_Analysis, .progress = "text")
 
 ### Set working directory to results
 setwd("D:\\Biostats and Epidemiology\\Project\\Project-Results")
